@@ -1,0 +1,30 @@
+services:
+  database:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '${PORT_DATABASE_SERVICE}:${PORT_DATABASE_SERVICE}'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  user-service:
+    build: ./user-service
+    env_file: ./.env
+    ports:
+      - '${PORT_USER_SERVICE}:${PORT_USER_SERVICE}'
+    depends_on:
+      - database
+
+  order-service:
+    build: ./order-service
+    env_file: ./.env
+    ports:
+      - '${PORT_ORDER_SERVICE}:${PORT_ORDER_SERVICE}'
+    depends_on:
+      - database
+
+volumes:
+  pgdata:

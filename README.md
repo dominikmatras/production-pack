@@ -1,3 +1,0 @@
-# 📦 ProductionPack
-
-### Author: Dominik Matras
