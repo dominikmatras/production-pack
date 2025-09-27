@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 
 export class PrismaOrderService implements IOrderService {
 	async create(order: Omit<Order, 'id' | 'createdAt'>): Promise<Order> {
-		const result = await prisma.order.create({ data: order })
+		const result = await prisma.order.create({ data: order as any })
 
 		return {
 			id: result.id,

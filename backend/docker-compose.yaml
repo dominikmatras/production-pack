@@ -23,8 +23,26 @@ services:
     env_file: ./.env
     ports:
       - '${PORT_ORDER_SERVICE}:${PORT_ORDER_SERVICE}'
+    command: >
+      sh -c "
+      npx prisma migrate deploy &&
+      npm run start
+      "
     depends_on:
       - database
+
+  production-service:
+    build: ./production-service
+    env_file: ./.env
+    ports:
+      - '${PORT_PRODUCTION_SERVICE}:${PORT_PRODUCTION_SERVICE}'
+    command: >
+      sh -c "
+      npx prisma migrate deploy &&
+      npm run start
+      "
+    depends_on:
+      - order-service
 
 volumes:
   pgdata:
