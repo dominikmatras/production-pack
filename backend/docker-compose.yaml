@@ -10,6 +10,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks: [backend-net]
+
   user-service:
     build: ./user-service
     env_file: ./.env
@@ -17,6 +19,7 @@ services:
       - '${PORT_USER_SERVICE}:${PORT_USER_SERVICE}'
     depends_on:
       - database
+    networks: [backend-net]
 
   order-service:
     build: ./order-service
@@ -30,6 +33,7 @@ services:
       "
     depends_on:
       - database
+    networks: [backend-net]
 
   production-service:
     build: ./production-service
@@ -42,7 +46,27 @@ services:
       npm run start
       "
     depends_on:
+      - database
       - order-service
+    networks: [backend-net]
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - '8080:8080'
+    depends_on:
+      - user-service
+      - order-service
+      - production-service
+    networks:
+      - backend-net
 
 volumes:
   pgdata:
+
+networks:
+  backend-net:
+    driver: bridge
