@@ -64,6 +64,22 @@ services:
     networks:
       - backend-net
 
+  # frontend:
+  #   build:
+  #     context: ./../frontend
+  #     dockerfile: Dockerfile
+  #   container_name: frontend
+  #   environment:
+  #     # tu wskaż publiczny adres gatewaya z punktu widzenia PRZEGLĄDARKI
+  #     # jeśli odpalasz lokalnie: http://localhost:8080
+  #     ENV_API_BASE_URL: http://localhost:8080
+  #   ports:
+  #     - '3000:80'
+  #   depends_on:
+  #     - api-gateway
+  #   networks:
+  #     - backend-net
+
 volumes:
   pgdata:
 
