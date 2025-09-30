@@ -26,7 +26,7 @@ export default function Login() {
 			if (user.role === 'worker') {
 				navigate('/orders', { replace: true })
 			} else {
-				navigate('/orders', { replace: true })
+				navigate('/home', { replace: true })
 			}
 		} catch (err: any) {
 			setError(err?.response?.data?.error || 'Nie udało się zalogować')
@@ -98,16 +98,6 @@ export default function Login() {
 							{loading ? 'Logowanie…' : 'Zaloguj się'}
 						</button>
 					</form>
-
-					{/* <div className="auth-divider">
-						<span>lub</span>
-					</div>
-
-					<div className="auth-actions">
-						<button className="outline" type="button" onClick={() => alert('SSO wkrótce 😉')}>
-							Zaloguj przez SSO
-						</button>
-					</div> */}
 				</div>
 			</main>
 		</div>

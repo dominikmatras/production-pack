@@ -1,0 +1,41 @@
+@brand: #618c7c;
+@ink: #011640;
+@bg: #f6f8f7;
+@card: #ffffff;
+@muted: #6b7280;
+@ring: fade(@brand, 35%);
+@danger: #b91c1c;
+
+.card() {
+	background: @card;
+	border-radius: 16px;
+	box-shadow: 0 10px 30px fade(@ink, 8%);
+	border: 1px solid #e6ecea;
+}
+.btn() {
+	padding: 10px 14px;
+	border-radius: 10px;
+	border: 1px solid @brand;
+	background: #fff;
+	color: @brand;
+	font-weight: 700;
+	cursor: pointer;
+	&:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
+	}
+	&.primary {
+		background: linear-gradient(135deg, @brand, darken(@brand, 7%));
+		border-color: transparent;
+		color: #fff;
+		box-shadow: 0 6px 16px fade(@brand, 25%);
+	}
+	&.ghost {
+		background: #fff;
+	}
+	&.tiny {
+		padding: 8px 10px;
+		border-radius: 8px;
+		font-size: 13px;
+	}
+}
