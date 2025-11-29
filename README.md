@@ -1,18 +1,18 @@
-# Production Pack —
+# Production Pack
 
 Lekki, skalowalny system do zarządzania zamówieniami i procesem produkcji (sałatki/warzywa, krojenie–pakowanie–zgrzewanie).
 
 ## 🧱 Stos technologiczny
 
-Frontend: React (Vite), TypeScript, Axios, Less
+- Frontend: React (Vite), TypeScript, Axios, Less
 
-Backend: Node.js, Express, TypeScript, Prisma ORM
+- Backend: Node.js, Express, TypeScript, Prisma ORM
 
-Bazy danych: PostgreSQL (1 DB/serwis)
+- Bazy danych: PostgreSQL (1 DB/serwis)
 
-Gateway: HAProxy
+- Gateway: HAProxy
 
-Konteneryzacja: Docker, docker-compose
+- Konteneryzacja: Docker, docker-compose
 
 ## Plik .env
 
