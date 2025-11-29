@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_REPORT")
+}
+
+model ProductionReport {
+  id               String          @id @default(uuid())
+  orderId          String
+  productionLineId String
+  productCode      String
+  producedOk       Int
+  producedNok      Int
+  startedAt        DateTime
+  endedAt          DateTime
+  durationSeconds  Int
+  status           ReportStatus    @default(COMPLETED)
+  downtimes        DowntimeEvent[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([orderId])
+}
+
+model DowntimeEvent {
+  id              String           @id @default(uuid())
+  reportId        String
+  report          ProductionReport @relation(fields: [reportId], references: [id])
+  reasonCode      String
+  description     String?
+  startedAt       DateTime
+  endedAt         DateTime
+  durationSeconds Int
+  createdAt       DateTime         @default(now())
+}
+
+enum ReportStatus {
+  COMPLETED
+  PARTIAL
+  CANCELLED
+  ERROR
+}

@@ -19,7 +19,7 @@ app.get('/health', async (_req, res) => {
 			status: 'ok',
 			service: 'production-service',
 			db: 'up',
-			latencyMs: Date.now() - started,
+			latencyMs: Date .now() - started,
 		})
 	} catch (e) {
 		return res.status(503).json({
