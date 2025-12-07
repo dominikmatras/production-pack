@@ -22,6 +22,9 @@ model Order {
   pausedAt       DateTime?
   resumedAt      DateTime?
   stoppedAt      DateTime?
+
+  pauseReasonCode        String?
+  pauseReasonDescription String?
 }
 
 enum OrderStatus {

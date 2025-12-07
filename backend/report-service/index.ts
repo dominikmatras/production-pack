@@ -11,7 +11,7 @@ const port = process.env.PORT_REPORTING_SERVICE || 3004
 
 app.use(express.json())
 
-app.get('/api/v1/report/health', (_req, res) => {
+app.get('/health', (_req, res) => {
 	res.json({ status: 'ok', service: 'report-service' })
 })
 

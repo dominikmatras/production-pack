@@ -1,9 +1,11 @@
 import { Request, Response } from 'express'
 import { PrismaProductionService } from '../../infrastructure/prisma/PrismaProductionService'
 import { ProductionHandler } from '../../application/services/ProductionHandler'
+import { FinishProduction } from '../../application/services/FinishProduction'
 
 const productionService = new PrismaProductionService()
-const productionHandler = new ProductionHandler(productionService)
+const finishProduction = new FinishProduction()
+const productionHandler = new ProductionHandler(productionService, finishProduction)
 
 export const startProduction = async (req: Request, res: Response): Promise<void> => {
 	const { id } = req.params
@@ -23,7 +25,13 @@ export const pauseProduction = async (req: Request, res: Response): Promise<void
 		return
 	}
 
-	await productionHandler.pause(id)
+	const { reasonCode, description } = req.body as {
+		reasonCode?: string
+		description?: string
+	}
+
+	await productionHandler.pause(id, { reasonCode, description })
+
 	res.status(200).json({ message: 'Production paused' })
 }
 
