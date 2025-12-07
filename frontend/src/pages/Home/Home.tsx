@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { clearSession, getUser } from '../helpers/auth'
-import './home.less'
+import { clearSession, getUser } from '../../helpers/auth'
+import { UserBox } from '../../components/UserBox/UserBox'
+import './Home.less'
 
 export default function Home() {
 	const navigate = useNavigate()
@@ -18,30 +19,15 @@ export default function Home() {
 					<h1>Production Pack</h1>
 					<p>Szybki dostęp do modułów systemu</p>
 				</div>
-				<div className="userbox">
-					<span className="dot" />
-					<span>{role}</span>
-					<button className="logout" onClick={logout}>
-						Wyloguj
-					</button>
-				</div>
+				<UserBox role={role} logout={logout} />
 			</header>
 
 			<section className="tiles">
 				<Tile title="Zamówienia" description="Przegląd, filtrowanie i sterowanie produkcją" onClick={() => navigate('/orders')} icon="📦" />
 				<Tile title="Dodaj zamówienie" description="Utwórz nowe zlecenie produkcyjne" onClick={() => navigate('/orders/new')} icon="➕" />
-				<Tile title="Monitoring produkcji" description="Podgląd postępu na liniach (wkrótce)" icon="⌛" disabled />
-				<Tile title="Raporty" description="Czasy realizacji, KPI (wkrótce)" icon="📊" disabled />
+				<Tile title="Monitoring produkcji" description="Podgląd postępu na liniach" onClick={() => navigate('/monitoring')} icon="⌛" />
+				<Tile title="Raporty" description="Lista zakończonych zamówień" onClick={() => navigate('/reports')} icon="📊" />
 			</section>
-
-			<div className="quick-actions">
-				<button className="btn primary" onClick={() => navigate('/orders')}>
-					Przejdź do Orders
-				</button>
-				<button className="btn" onClick={() => navigate('/orders/new')}>
-					Dodaj zamówienie
-				</button>
-			</div>
 		</div>
 	)
 }

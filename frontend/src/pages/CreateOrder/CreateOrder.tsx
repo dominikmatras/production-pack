@@ -1,15 +1,21 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../api/http'
-import { getUser } from '../helpers/auth'
-import { templates } from '../data/order-templates'
-import './create-order.less'
+import { api } from '../../api/http'
+import { clearSession, getUser } from '../../helpers/auth'
+import { templates } from '../../data/order-templates'
+import './CreateOrder.less'
+import { UserBox } from '../../components/UserBox/UserBox'
 
 type Role = 'WORKER' | 'MANAGER' | 'ADMIN'
 
 export default function CreateOrder() {
 	const navigate = useNavigate()
 	const role = (getUser()?.role ?? 'WORKER') as Role
+
+	function logout() {
+		clearSession()
+		navigate('/login', { replace: true })
+	}
 
 	type OrderTemplate = {
 		id: string
@@ -114,9 +120,12 @@ export default function CreateOrder() {
 					<h1>Dodaj zamówienie</h1>
 					<p>Utwórz nowe zlecenie produkcyjne</p>
 				</div>
-				<button className="btn ghost" onClick={() => navigate('/orders')}>
-					← Powrót
-				</button>
+				<div>
+					<button className="btn ghost" onClick={() => navigate('/home')}>
+						← Powrót
+					</button>
+					<UserBox role={role} logout={logout} />
+				</div>
 			</header>
 
 			{error && <div className="banner error">{error}</div>}

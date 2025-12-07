@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { api } from '../api/http'
+import { api } from '../../api/http'
 import { useNavigate } from 'react-router-dom'
-import './auth.less'
+import './Login.less'
 
 export default function Login() {
 	const [email, setEmail] = useState('')

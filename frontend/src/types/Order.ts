@@ -7,5 +7,6 @@ export type Order = {
 	targetDate: string
 	targetHour: string
 	status: OrderStatus
+	startedAt?: string
 }
 export type OrderStatus = 'CREATED' | 'PENDING' | 'IN_PROGRESS' | 'PAUSED' | 'COMPLETED' | 'CANCELLED'

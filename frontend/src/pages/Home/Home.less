@@ -1,11 +1,13 @@
-@import (reference) './vars.less';
+@import (reference) './../vars.less';
 
 .home-wrap {
-	padding: 24px clamp(18px, 4vw, 36px);
 	background: @bg;
 	min-height: 100vh;
 	color: @ink;
 	font: 500 15px/1.45 ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 32px 24px;
 }
 
 .home-header {
@@ -101,19 +103,5 @@
 	&.disabled {
 		opacity: 0.55;
 		cursor: not-allowed;
-	}
-}
-
-.quick-actions {
-	margin-top: 18px;
-	display: flex;
-	gap: 8px;
-	flex-wrap: wrap;
-	.btn {
-		.btn();
-	}
-	.primary {
-		.btn();
-		.primary();
 	}
 }

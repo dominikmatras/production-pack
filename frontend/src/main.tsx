@@ -1,10 +1,12 @@
 import { StrictMode, type JSX } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
-import Home from './pages/Home'
-import Orders from './pages/Orders'
-import CreateOrder from './pages/CreateOrder'
+import Login from './pages/Login/Login'
+import Home from './pages/Home/Home'
+import Orders from './pages/Orders/Orders'
+import CreateOrder from './pages/CreateOrder/CreateOrder'
+import Monitoring from './pages/Monitoring/Monitoring'
+import Report from './pages/Report/Report'
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
 	const token = localStorage.getItem('access_token')
@@ -45,6 +47,26 @@ const router = createBrowserRouter([
 			<ProtectedRoute>
 				<RoleGuard allow={['ADMIN', 'MANAGER']}>
 					<CreateOrder />
+				</RoleGuard>
+			</ProtectedRoute>
+		),
+	},
+	{
+		path: '/monitoring',
+		element: (
+			<ProtectedRoute>
+				<RoleGuard allow={['ADMIN', 'MANAGER']}>
+					<Monitoring />
+				</RoleGuard>
+			</ProtectedRoute>
+		),
+	},
+	{
+		path: '/reports',
+		element: (
+			<ProtectedRoute>
+				<RoleGuard allow={['ADMIN', 'MANAGER']}>
+					<Report />
 				</RoleGuard>
 			</ProtectedRoute>
 		),

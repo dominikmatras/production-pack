@@ -1,17 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
-import { api } from '../api/http'
+import { api } from '../../api/http'
 import { useNavigate } from 'react-router-dom'
-import { clearSession, getUser } from '../helpers/auth'
-import { type Order, type OrderStatus } from '../types/Order'
-import './orders.less'
+import { clearSession, getUser } from '../../helpers/auth'
+import { type Order, type OrderStatus } from '../../types/Order'
+import { getTodayInputDate } from '../../helpers/todayDate'
+import { UserBox } from '../../components/UserBox/UserBox'
+import './Orders.less'
 
 export default function Orders() {
 	const [orders, setOrders] = useState<Order[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const navigate = useNavigate()
+	const [pauseModalOpen, setPauseModalOpen] = useState(false)
+	const [pauseOrderId, setPauseOrderId] = useState<string | null>(null)
+	const [pauseReasonCode, setPauseReasonCode] = useState<string>('NO_MATERIAL')
+	const [pauseReasonDescription, setPauseReasonDescription] = useState<string>('')
 
-	const [date, setDate] = useState<string>('') // yyyy-mm-dd
+	const [date, setDate] = useState<string>(getTodayInputDate) // yyyy-mm-dd
 	const [line, setLine] = useState<string>('')
 
 	const role = getUser()?.role
@@ -71,9 +77,33 @@ export default function Orders() {
 	}
 
 	const start = (id: string) => updateStatusOptimistic(id, 'IN_PROGRESS', () => api.post(`/api/v1/production/start/${id}`))
-	const pause = (id: string) => updateStatusOptimistic(id, 'PAUSED', () => api.post(`/api/v1/production/pause/${id}`))
 	const resume = (id: string) => updateStatusOptimistic(id, 'IN_PROGRESS', () => api.post(`/api/v1/production/resume/${id}`))
 	const stop = (id: string) => updateStatusOptimistic(id, 'COMPLETED', () => api.post(`/api/v1/production/stop/${id}`))
+
+	const handleConfirmPause = async () => {
+		if (!pauseOrderId) return
+
+		await updateStatusOptimistic(pauseOrderId, 'PAUSED', () =>
+			api.post(`/api/v1/production/pause/${pauseOrderId}`, {
+				reasonCode: pauseReasonCode,
+				description: pauseReasonDescription || undefined,
+			})
+		)
+
+		handleClosePauseModal()
+	}
+
+	const handleOpenPauseModal = (orderId: string) => {
+		setPauseOrderId(orderId)
+		setPauseReasonCode('NO_MATERIAL')
+		setPauseReasonDescription('')
+		setPauseModalOpen(true)
+	}
+
+	const handleClosePauseModal = () => {
+		setPauseModalOpen(false)
+		setPauseOrderId(null)
+	}
 
 	return (
 		<div className="orders-wrap">
@@ -82,12 +112,11 @@ export default function Orders() {
 					<h1>Zamówienia</h1>
 					<p>Przegląd i zarządzanie produkcją</p>
 				</div>
-				<div className="userbox">
-					<span className="dot" />
-					<span>{role}</span>
-					<button className="btn tiny ghost" onClick={logout} title="Wyloguj">
-						Wyloguj
+				<div>
+					<button className="btn ghost" onClick={() => navigate('/home')}>
+						← Powrót
 					</button>
+					<UserBox role={role} logout={logout} />
 				</div>
 			</header>
 
@@ -99,7 +128,7 @@ export default function Orders() {
 
 				<label className="field">
 					<span>Linia</span>
-					<input type="text" placeholder="np. 8, 9, LINE-01" value={line} onChange={e => setLine(e.target.value)} aria-label="Linia produkcyjna" />
+					<input type="text" placeholder="np. 1, 2, 3" value={line} onChange={e => setLine(e.target.value)} aria-label="Linia produkcyjna" />
 				</label>
 
 				<div className="actions">
@@ -163,11 +192,11 @@ export default function Orders() {
 											<button className="btn tiny" disabled={order.status !== 'CREATED'} onClick={() => start(order.id)} title="Start">
 												Start
 											</button>
-											<button className="btn tiny" disabled={order.status !== 'IN_PROGRESS'} onClick={() => pause(order.id)} title="Pause">
-												Pause
+											<button className="btn tiny" disabled={order.status !== 'IN_PROGRESS'} onClick={() => handleOpenPauseModal(order.id)} title="Pause">
+												Przestój
 											</button>
 											<button className="btn tiny" disabled={order.status !== 'PAUSED'} onClick={() => resume(order.id)} title="Resume">
-												Resume
+												Wznowienie
 											</button>
 											<button
 												className="btn tiny danger"
@@ -184,6 +213,45 @@ export default function Orders() {
 					</table>
 				</div>
 			</div>
+			{pauseModalOpen && (
+				<div className="modal-backdrop">
+					<div className="modal">
+						<h2>Przestój produkcji</h2>
+
+						<label className="modal__label">
+							Powód przestoju
+							<select value={pauseReasonCode} onChange={e => setPauseReasonCode(e.target.value)} className="modal__select">
+								<option value="NO_MATERIAL">Brak materiału</option>
+								<option value="FAILURE">Awaria maszyny</option>
+								<option value="CLEANING">Czyszczenie linii</option>
+								<option value="PAUSE">Przerwa pracowników</option>
+								<option value="MAINTENANCE">Konserwacja maszyny</option>
+								<option value="OTHER">Inne</option>
+							</select>
+						</label>
+
+						<label className="modal__label">
+							Opis (opcjonalnie)
+							<textarea
+								value={pauseReasonDescription}
+								onChange={e => setPauseReasonDescription(e.target.value)}
+								className="modal__textarea"
+								rows={3}
+								placeholder="Opisz krótko przyczynę przestoju..."
+							/>
+						</label>
+
+						<div className="modal__actions">
+							<button className="btn tiny" type="button" onClick={handleClosePauseModal}>
+								Anuluj
+							</button>
+							<button className="btn primary" type="button" onClick={handleConfirmPause}>
+								Przestój
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }

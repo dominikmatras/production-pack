@@ -1,11 +1,11 @@
 export const templates = [
 	{
 		id: 'tpl-lettuce-1kg',
-		name: 'Sałata lodowa 1kg',
+		name: 'Sałata lodowa 300g',
 		product: 'Sałata lodowa krojona',
 		productNumber: '1054',
 		quantity: 1000,
-		productionLine: '8',
+		productionLine: 'line002',
 		targetHour: '14:00',
 	},
 	{
@@ -14,16 +14,16 @@ export const templates = [
 		product: 'Mix sałat',
 		productNumber: '5002',
 		quantity: 500,
-		productionLine: '9',
+		productionLine: 'line003',
 		targetHour: '11:45',
 	},
 	{
-		id: 'tpl-carrot-julienne',
-		name: 'Marchew julienne 2kg',
+		id: 'tpl-carrot-tarta',
+		name: 'Marchew tarta 200g',
 		product: 'Marchew julienne',
 		productNumber: '2002',
 		quantity: 2000,
-		productionLine: '1',
+		productionLine: 'line001',
 		targetHour: '16:30',
 	},
 ]

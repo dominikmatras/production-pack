@@ -39,3 +39,30 @@
 		font-size: 13px;
 	}
 }
+
+.userbox {
+	display: inline-flex;
+	gap: 10px;
+	align-items: center;
+	padding: 8px 12px;
+	border-radius: 12px;
+	background: #fff;
+	border: 1px solid #e6ecea;
+	.dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 999px;
+		background: @brand;
+		display: inline-block;
+	}
+	span {
+		text-transform: uppercase;
+		font-weight: 700;
+		color: @brand;
+		letter-spacing: 0.6px;
+	}
+	.logout {
+		.btn();
+		.tiny();
+	}
+}

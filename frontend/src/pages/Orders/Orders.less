@@ -1,10 +1,4 @@
-@brand: #618c7c;
-@ink: #011640;
-@bg: #f6f8f7;
-@card: #ffffff;
-@muted: #6b7280;
-@ring: fade(@brand, 35%);
-@danger: #b91c1c;
+@import (reference) './../vars.less';
 
 .card() {
 	background: @card;
@@ -14,11 +8,40 @@
 }
 
 .orders-wrap {
-	padding: 24px clamp(18px, 4vw, 36px);
 	background: @bg;
 	min-height: 100vh;
 	color: @ink;
 	font: 500 15px/1.45 ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 32px 24px;
+}
+
+.userbox {
+	display: inline-flex;
+	gap: 10px;
+	align-items: center;
+	padding: 8px 12px;
+	border-radius: 12px;
+	background: #fff;
+	border: 1px solid #e6ecea;
+	.dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 999px;
+		background: @brand;
+		display: inline-block;
+	}
+	span {
+		text-transform: uppercase;
+		font-weight: 700;
+		color: @brand;
+		letter-spacing: 0.6px;
+	}
+	.logout {
+		.btn();
+		.tiny();
+	}
 }
 
 .orders-header {
@@ -39,27 +62,8 @@
 		}
 	}
 
-	.userbox {
-		display: inline-flex;
-		gap: 10px;
-		align-items: center;
-		padding: 8px 12px;
-		border-radius: 12px;
-		background: #fff;
-		border: 1px solid #e6ecea;
-		.dot {
-			width: 8px;
-			height: 8px;
-			border-radius: 999px;
-			background: @brand;
-			display: inline-block;
-		}
-		span {
-			text-transform: uppercase;
-			font-weight: 700;
-			color: @brand;
-			letter-spacing: 0.6px;
-		}
+	button.ghost.btn {
+		margin-right: 12px;
 	}
 }
 
@@ -218,5 +222,61 @@
 		background: #fde8e8;
 		color: @danger;
 		border: 1px solid #ffd1d1;
+	}
+}
+
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.modal {
+	background: @bg;
+	color: @ink;
+	padding: 24px;
+	border-radius: 8px;
+	min-width: 320px;
+	max-width: 480px;
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+
+	&__label {
+		display: flex;
+		flex-direction: column;
+		margin-bottom: 12px;
+		font-size: 14px;
+	}
+
+	&__select,
+	&__textarea {
+		margin-top: 6px;
+		padding: 6px 8px;
+		border-radius: 4px;
+		border: 1px solid #444;
+		background: @card;
+		color: @ink;
+	}
+
+	&__select:focus,
+	&__textarea:focus {
+		outline: none;
+		border-color: @brand;
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+		margin-top: 16px;
+	}
+
+	h2 {
+		margin-top: 0;
+		margin-bottom: 16px;
+		font-size: 18px;
 	}
 }

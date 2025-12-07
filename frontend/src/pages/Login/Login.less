@@ -1,14 +1,5 @@
-/* src/styles/auth.less */
+@import (reference) './../vars.less';
 
-/* -------- variables -------- */
-@brand: #618c7c;
-@ink: #011640;
-@bg: #f6f8f7;
-@card: #ffffff;
-@muted: #6b7280;
-@ring: fade(@brand, 35%);
-
-/* -------- mixins -------- */
 .focus-ring() {
 	border-color: @brand;
 	box-shadow: 0 0 0 4px @ring;
@@ -25,7 +16,6 @@
 	border: 1px solid #e8ecea;
 }
 
-/* -------- base -------- */
 * {
 	box-sizing: border-box;
 }
@@ -41,7 +31,6 @@ body {
 	font: 500 16px/1.45 ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
 }
 
-/* -------- layout -------- */
 .auth-grid {
 	display: grid;
 	grid-template-columns: 1.1fr 1.4fr;

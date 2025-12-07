@@ -1,11 +1,13 @@
-@import (reference) './vars.less';
+@import (reference) './../vars.less';
 
 .create-wrap {
-	padding: 24px clamp(18px, 4vw, 36px);
 	background: @bg;
 	min-height: 100vh;
 	color: @ink;
 	font: 500 15px/1.45 ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 32px 24px;
 }
 
 .create-header {
@@ -29,6 +31,10 @@
 	.ghost {
 		.btn();
 		.ghost();
+	}
+
+	button.ghost.btn {
+		margin-right: 12px;
 	}
 }
 
