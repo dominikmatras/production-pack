@@ -65,7 +65,7 @@ export class PrismaProductionService implements IProductionService {
 		}
 
 		const reportData: ProductionReportData = {
-			orderId: order.id,
+			orderId: order.product,
 			productionLineId: order.productionLine,
 			productCode: order.productNumber,
 			producedOk: order.quantity,
