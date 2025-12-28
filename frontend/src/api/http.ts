@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const runtimeBase = (window as any).__ENV__?.API_BASE_URL as string | undefined
+const runtimeBase = ((window as any).__APP_CONFIG__?.API_BASE_URL as string | undefined) ?? ((window as any).__ENV__?.API_BASE_URL as string | undefined)
 const buildBase = import.meta.env.VITE_API_BASE_URL as string | undefined
 
 export const api = axios.create({
