@@ -11,7 +11,7 @@
 	},
 	"dependencies": {
 		"axios": "^1.12.2",
-		"less.js": "^3.0.5",
+		"less.js": "^0.0.1",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
 		"react-router-dom": "^7.9.3"

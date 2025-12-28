@@ -4,7 +4,7 @@ const runtimeBase = (window as any).__ENV__?.API_BASE_URL as string | undefined
 const buildBase = import.meta.env.VITE_API_BASE_URL as string | undefined
 
 export const api = axios.create({
-	baseURL: runtimeBase ?? buildBase ?? 'http://localhost:8080',
+	baseURL: runtimeBase ?? buildBase ?? 'https://api.production-pack.dm-tech.pl/',
 	withCredentials: false,
 })
 
