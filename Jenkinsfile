@@ -146,7 +146,7 @@ pipeline {
 
             if [ -n "$(git status --porcelain)" ]; then
               git add ${VALUES_FILE}
-              git commit -m "chore(prod): bump images to ${TAG}"
+              git commit -m "Jenkins CI: Bump images to ${TAG}"
               git push https://${GIT_USER}:${GIT_TOKEN}@github.com/dominikmatras/production-pack-k8s.git main
             else
               echo "No changes to commit."
