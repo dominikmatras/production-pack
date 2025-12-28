@@ -8,7 +8,7 @@ Lekki, skalowalny system do zarządzania zamówieniami i procesem produkcji (sa�
 
 - Backend: Node.js, Express, TypeScript, Prisma ORM
 
-- Bazy danych: PostgreSQL (1 DB/serwis)
+- Bazy danych: PostgreSQL
 
 - Gateway: HAProxy
 
