@@ -6,7 +6,7 @@ import { prisma } from './src/infrastructure/prisma/client'
 dotenv.config({ path: '../.env' })
 
 const app = express()
-const port = process.env.PORT_PRODUCTION_SERVICE || 3003
+const port = process.env.PORT || 3003
 
 app.use(express.json())
 app.use('/api/v1/production', productionRouter)
@@ -19,7 +19,7 @@ app.get('/health', async (_req, res) => {
 			status: 'ok',
 			service: 'production-service',
 			db: 'up',
-			latencyMs: Date .now() - started,
+			latencyMs: Date.now() - started,
 		})
 	} catch (e) {
 		return res.status(503).json({

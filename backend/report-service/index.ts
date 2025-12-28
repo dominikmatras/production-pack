@@ -7,7 +7,7 @@ import { notFoundHandler } from './src/web/middleware/notFoundHandler'
 dotenv.config({ path: '../.env' })
 
 const app = express()
-const port = process.env.PORT_REPORTING_SERVICE || 3004
+const port = process.env.PORT || 3004
 
 app.use(express.json())
 

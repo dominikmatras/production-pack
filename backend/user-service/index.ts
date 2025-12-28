@@ -6,7 +6,7 @@ import { prisma } from './src/infrastructure/prisma/client'
 dotenv.config({ path: '../.env' })
 
 const app = express()
-const port = process.env.PORT_USER_SERVICE || 3001
+const port = process.env.PORT || 3001
 
 app.use(express.json())
 app.use('/api/v1/user', authRoutes)
