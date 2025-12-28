@@ -87,30 +87,51 @@ pipeline {
     }
 
     stage("Update image tags in GitOps values") {
-      steps {
-        sh '''
-          set -e
-          cd gitops
+  steps {
+    sh '''
+      set -e
+      cd gitops
 
-          # install yq if missing (linux amd64)
-          if ! command -v yq >/dev/null 2>&1; then
-            wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
-            chmod +x /usr/local/bin/yq
-          fi
+      FILE="${VALUES_FILE}"
 
-          yq -i '.frontend.image.tag = strenv(TAG)' ${VALUES_FILE}
-          yq -i '.gateway.image.tag = strenv(TAG)' ${VALUES_FILE}
+      replace_tag_by_repo() {
+        local repo="$1"
+        local tag="$2"
 
-          yq -i '.services."user-service".image.tag = strenv(TAG)' ${VALUES_FILE}
-          yq -i '.services."order-service".image.tag = strenv(TAG)' ${VALUES_FILE}
-          yq -i '.services."production-service".image.tag = strenv(TAG)' ${VALUES_FILE}
-          yq -i '.services."report-service".image.tag = strenv(TAG)' ${VALUES_FILE}
-
-          echo "Changed files:"
-          git status --porcelain || true
-        '''
+        awk -v repo="$repo" -v newtag="$tag" '
+          BEGIN { inblock=0 }
+          {
+            if ($0 ~ "repository:[[:space:]]*"repo"$") {
+              inblock=1
+              print
+              next
+            }
+            if (inblock==1 && $0 ~ /^[[:space:]]*tag:[[:space:]]*/) {
+              sub(/tag:[[:space:]]*.*/, "tag: \x27"newtag"\x27")
+              inblock=0
+              print
+              next
+            }
+            if (inblock==1 && $0 ~ /^[^[:space:]]/) {
+              inblock=0
+            }
+            print
+          }
+        ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
       }
-    }
+
+      replace_tag_by_repo "ghcr.io/${ORG}/frontend" "$TAG"
+      replace_tag_by_repo "ghcr.io/${ORG}/api-gateway" "$TAG"
+      replace_tag_by_repo "ghcr.io/${ORG}/user-service" "$TAG"
+      replace_tag_by_repo "ghcr.io/${ORG}/order-service" "$TAG"
+      replace_tag_by_repo "ghcr.io/${ORG}/production-service" "$TAG"
+      replace_tag_by_repo "ghcr.io/${ORG}/report-service" "$TAG"
+
+      echo "Changed files:"
+      git status --porcelain || true
+    '''
+  }
+}
 
     stage("Commit & Push GitOps") {
       steps {
