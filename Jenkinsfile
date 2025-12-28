@@ -9,19 +9,20 @@ pipeline {
   environment {
     ORG = "dominikmatras-tech"
     GHCR = "ghcr.io"
+
     APP_REPO = "https://github.com/dominikmatras/production-pack.git"
     GITOPS_REPO = "https://github.com/dominikmatras/production-pack-k8s.git"
     VALUES_FILE = "apps/production-pack/values-prod.yaml"
   }
 
   stages {
+
     stage("Checkout app repo") {
       steps {
         deleteDir()
         git branch: "main", url: "${APP_REPO}"
-        sh 'git rev-parse --short HEAD > .tag'
         script {
-          env.TAG = readFile(".tag").trim()
+          env.TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
         }
         echo "Build tag: ${env.TAG}"
       }
@@ -29,104 +30,106 @@ pipeline {
 
     stage("Login GHCR") {
       steps {
-        withCredentials([string(credentialsId: "ghcr-creds", variable: "GH_TOKEN")]) {
-          sh """
-            echo "$GH_TOKEN" | docker login ${GHCR} -u ${ORG} --password-stdin
-          """
+        withCredentials([usernamePassword(credentialsId: "ghcr-creds", usernameVariable: "GH_USER", passwordVariable: "GH_TOKEN")]) {
+          sh '''
+            set -e
+            echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_USER" --password-stdin
+          '''
         }
       }
     }
 
     stage("Build & Push backend images") {
       steps {
-        script {
-          def services = [
-            [name: "user-service",       path: "backend/user-service"],
-            [name: "order-service",      path: "backend/order-service"],
-            [name: "production-service", path: "backend/production-service"],
-            [name: "report-service",     path: "backend/report-service"],
-            [name: "api-gateway",        path: "backend/api-gateway"],
-          ]
+        sh '''
+          set -e
 
-          for (svc in services) {
-            sh """
-              set -e
-              docker build -t ${GHCR}/${ORG}/${svc.name}:${TAG} ${svc.path}
-              docker push ${GHCR}/${ORG}/${svc.name}:${TAG}
-            """
-          }
-        }
+          docker build -t ${GHCR}/${ORG}/user-service:$TAG backend/user-service
+          docker push ${GHCR}/${ORG}/user-service:$TAG
+
+          docker build -t ${GHCR}/${ORG}/order-service:$TAG backend/order-service
+          docker push ${GHCR}/${ORG}/order-service:$TAG
+
+          docker build -t ${GHCR}/${ORG}/production-service:$TAG backend/production-service
+          docker push ${GHCR}/${ORG}/production-service:$TAG
+
+          docker build -t ${GHCR}/${ORG}/report-service:$TAG backend/report-service
+          docker push ${GHCR}/${ORG}/report-service:$TAG
+
+          docker build -t ${GHCR}/${ORG}/api-gateway:$TAG backend/api-gateway
+          docker push ${GHCR}/${ORG}/api-gateway:$TAG
+        '''
       }
     }
 
     stage("Build & Push frontend image") {
       steps {
-        sh """
+        sh '''
           set -e
-          docker build -t ${GHCR}/${ORG}/frontend:${TAG} frontend
-          docker push ${GHCR}/${ORG}/frontend:${TAG}
-        """
+          docker build -t ${GHCR}/${ORG}/frontend:$TAG frontend
+          docker push ${GHCR}/${ORG}/frontend:$TAG
+        '''
       }
     }
 
     stage("Checkout GitOps repo") {
       steps {
-        dir("gitops") {
-          withCredentials([string(credentialsId: "github-creds", variable: "GITOPS_TOKEN")]) {
-            sh """
-              git clone https://x-access-token:${GITOPS_TOKEN}@github.com/dominikmatras/production-pack-k8s.git .
-              git checkout main
-            """
-          }
+        sh 'rm -rf gitops || true'
+        withCredentials([usernamePassword(credentialsId: "github-creds", usernameVariable: "GIT_USER", passwordVariable: "GIT_TOKEN")]) {
+          sh '''
+            set -e
+            git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/dominikmatras/production-pack-k8s.git gitops
+            cd gitops
+            git checkout main
+          '''
         }
       }
     }
 
     stage("Update image tags in GitOps values") {
       steps {
-        dir("gitops") {
-          sh """
-            if ! command -v yq >/dev/null 2>&1; then
-              wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
-              chmod +x /usr/local/bin/yq
-            fi
-          """
+        sh '''
+          set -e
+          cd gitops
 
-          sh """
-            set -e
+          # install yq if missing (linux amd64)
+          if ! command -v yq >/dev/null 2>&1; then
+            wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+            chmod +x /usr/local/bin/yq
+          fi
 
-            yq -i '.frontend.image.tag = strenv(TAG)' ${VALUES_FILE}
-            yq -i '.gateway.image.tag = strenv(TAG)' ${VALUES_FILE}
+          yq -i '.frontend.image.tag = strenv(TAG)' ${VALUES_FILE}
+          yq -i '.gateway.image.tag = strenv(TAG)' ${VALUES_FILE}
 
-            yq -i '.services."user-service".image.tag = strenv(TAG)' ${VALUES_FILE}
-            yq -i '.services."order-service".image.tag = strenv(TAG)' ${VALUES_FILE}
-            yq -i '.services."production-service".image.tag = strenv(TAG)' ${VALUES_FILE}
-            yq -i '.services."report-service".image.tag = strenv(TAG)' ${VALUES_FILE}
+          yq -i '.services."user-service".image.tag = strenv(TAG)' ${VALUES_FILE}
+          yq -i '.services."order-service".image.tag = strenv(TAG)' ${VALUES_FILE}
+          yq -i '.services."production-service".image.tag = strenv(TAG)' ${VALUES_FILE}
+          yq -i '.services."report-service".image.tag = strenv(TAG)' ${VALUES_FILE}
 
-            git status --porcelain
-          """
-        }
+          echo "Changed files:"
+          git status --porcelain || true
+        '''
       }
     }
 
     stage("Commit & Push GitOps") {
       steps {
-        dir("gitops") {
-          withCredentials([string(credentialsId: "github-creds", variable: "GITOPS_TOKEN")]) {
-            sh """
-              set -e
-              git config user.name "Jenkins CI"
-              git config user.email "jenkins@dm-tech.pl"
+        withCredentials([usernamePassword(credentialsId: "github-creds", usernameVariable: "GIT_USER", passwordVariable: "GIT_TOKEN")]) {
+          sh '''
+            set -e
+            cd gitops
 
-              if [ -n "$(git status --porcelain)" ]; then
-                git add ${VALUES_FILE}
-                git commit -m "chore(prod): bump images to ${TAG}"
-                git push https://x-access-token:${GITOPS_TOKEN}@github.com/dominikmatras/production-pack-k8s.git main
-              else
-                echo "No changes to commit."
-              fi
-            """
-          }
+            git config user.name "jenkins"
+            git config user.email "jenkins@dm-tech.pl"
+
+            if [ -n "$(git status --porcelain)" ]; then
+              git add ${VALUES_FILE}
+              git commit -m "chore(prod): bump images to ${TAG}"
+              git push https://${GIT_USER}:${GIT_TOKEN}@github.com/dominikmatras/production-pack-k8s.git main
+            else
+              echo "No changes to commit."
+            fi
+          '''
         }
       }
     }
@@ -134,7 +137,7 @@ pipeline {
 
   post {
     always {
-      sh "docker logout ${GHCR} || true"
+      sh 'docker logout ghcr.io || true'
     }
   }
 }
