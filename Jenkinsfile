@@ -87,51 +87,52 @@ pipeline {
     }
 
     stage("Update image tags in GitOps values") {
-  steps {
-    sh '''
-      set -e
-      cd gitops
+      steps {
+        sh '''
+          set -e
+          cd gitops
 
-      FILE="${VALUES_FILE}"
+          FILE="${VALUES_FILE}"
 
-      replace_tag_by_repo() {
-        local repo="$1"
-        local tag="$2"
+          replace_tag_by_repo() {
+            local repo="$1"
+            local newtag="$2"
 
-        awk -v repo="$repo" -v newtag="$tag" '
-          BEGIN { inblock=0 }
-          {
-            if ($0 ~ "repository:[[:space:]]*"repo"$") {
-              inblock=1
-              print
-              next
-            }
-            if (inblock==1 && $0 ~ /^[[:space:]]*tag:[[:space:]]*/) {
-              sub(/tag:[[:space:]]*.*/, "tag: \x27"newtag"\x27")
-              inblock=0
-              print
-              next
-            }
-            if (inblock==1 && $0 ~ /^[^[:space:]]/) {
-              inblock=0
-            }
-            print
+            awk -v repo="$repo" -v newtag="$newtag" '
+              BEGIN { inblock=0 }
+              {
+                if ($0 ~ "repository:[[:space:]]*"repo"$") {
+                  inblock=1
+                  print
+                  next
+                }
+
+                if (inblock==1 && $0 ~ /^[[:space:]]*tag:[[:space:]]*/) {
+                  indent=$0
+                  sub(/[^[:space:]].*$/,"",indent)   # zostaw tylko wcięcie
+                  print indent "tag: " newtag        # tag bez cudzysłowów (YAML OK)
+                  inblock=0
+                  next
+                }
+
+                if (inblock==1 && $0 ~ /^[^[:space:]]/) { inblock=0 } # bezpiecznik
+                print
+              }
+            ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
           }
-        ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+
+          replace_tag_by_repo "ghcr.io/${ORG}/frontend" "$TAG"
+          replace_tag_by_repo "ghcr.io/${ORG}/api-gateway" "$TAG"
+          replace_tag_by_repo "ghcr.io/${ORG}/user-service" "$TAG"
+          replace_tag_by_repo "ghcr.io/${ORG}/order-service" "$TAG"
+          replace_tag_by_repo "ghcr.io/${ORG}/production-service" "$TAG"
+          replace_tag_by_repo "ghcr.io/${ORG}/report-service" "$TAG"
+
+          echo "Changed files:"
+          git status --porcelain || true
+        '''
       }
-
-      replace_tag_by_repo "ghcr.io/${ORG}/frontend" "$TAG"
-      replace_tag_by_repo "ghcr.io/${ORG}/api-gateway" "$TAG"
-      replace_tag_by_repo "ghcr.io/${ORG}/user-service" "$TAG"
-      replace_tag_by_repo "ghcr.io/${ORG}/order-service" "$TAG"
-      replace_tag_by_repo "ghcr.io/${ORG}/production-service" "$TAG"
-      replace_tag_by_repo "ghcr.io/${ORG}/report-service" "$TAG"
-
-      echo "Changed files:"
-      git status --porcelain || true
-    '''
-  }
-}
+    }
 
     stage("Commit & Push GitOps") {
       steps {
