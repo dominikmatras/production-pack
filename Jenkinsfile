@@ -1,20 +1,22 @@
 def trivyScanImage(String imageRef) {
-  sh """
-    set -e
+  withEnv(["IMAGE_REF=${imageRef}"]) {
+    sh '''#!/bin/sh
+      set -eu
 
-    # cache trivy (żeby było szybciej)
-    mkdir -p .trivy-cache
+      mkdir -p .trivy-cache
 
-    docker run --rm \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      -v "\$(pwd)/.trivy-cache:/root/.cache/" \
-      aquasec/trivy:latest \
-      image --no-progress \
-      --severity CRITICAL,HIGH \
-      --exit-code 1 \
-      --ignore-unfixed \
-      "${imageRef}"
-  """
+      echo "[TRIVY] Scanning: $IMAGE_REF"
+      docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "$PWD/.trivy-cache:/root/.cache/" \
+        aquasec/trivy:latest \
+        image --no-progress \
+        --severity CRITICAL \
+        --exit-code 1 \
+        --ignore-unfixed \
+        "$IMAGE_REF"
+    '''
+  }
 }
 
 pipeline {
@@ -58,37 +60,57 @@ pipeline {
       }
     }
 
-    stage("Build & Push backend images") {
+    stage("Build, Scan & Push backend images") {
       steps {
-        sh '''
-          set -e
+        script {
+          def images = [
+            [name: "user-service",       ctx: "backend/user-service"],
+            [name: "order-service",      ctx: "backend/order-service"],
+            [name: "production-service", ctx: "backend/production-service"],
+            [name: "report-service",     ctx: "backend/report-service"],
+            [name: "api-gateway",        ctx: "backend/api-gateway"],
+          ]
 
-          docker build -t ${GHCR}/${ORG}/user-service:$TAG backend/user-service
-          docker push ${GHCR}/${ORG}/user-service:$TAG
+          for (img in images) {
+            def imageRef = "${env.GHCR}/${env.ORG}/${img.name}:${env.TAG}"
 
-          docker build -t ${GHCR}/${ORG}/order-service:$TAG backend/order-service
-          docker push ${GHCR}/${ORG}/order-service:$TAG
+            sh """#!/bin/sh
+              set -eu
+              echo "[BUILD] ${imageRef}"
+              docker build -t ${imageRef} ${img.ctx}
+            """
 
-          docker build -t ${GHCR}/${ORG}/production-service:$TAG backend/production-service
-          docker push ${GHCR}/${ORG}/production-service:$TAG
+            trivyScanImage(imageRef)
 
-          docker build -t ${GHCR}/${ORG}/report-service:$TAG backend/report-service
-          docker push ${GHCR}/${ORG}/report-service:$TAG
-
-          docker build -t ${GHCR}/${ORG}/api-gateway:$TAG backend/api-gateway
-          docker push ${GHCR}/${ORG}/api-gateway:$TAG
-        '''
+            sh """#!/bin/sh
+              set -eu
+              echo "[PUSH] ${imageRef}"
+              docker push ${imageRef}
+            """
+          }
+        }
       }
     }
 
     stage("Build & Push frontend image") {
       steps {
-        sh '''
-          set -e
-          docker build -t ${GHCR}/${ORG}/frontend:$TAG frontend
-          script { trivyScanImage("${IMAGE}") }
-          docker push ${GHCR}/${ORG}/frontend:$TAG
-        '''
+        script {
+          def imageRef = "${env.GHCR}/${env.ORG}/frontend:${env.TAG}"
+
+          sh """#!/bin/sh
+            set -eu
+            echo "[BUILD] ${imageRef}"
+            docker build -t ${imageRef} frontend
+          """
+
+          trivyScanImage(imageRef)
+
+          sh """#!/bin/sh
+            set -eu
+            echo "[PUSH] ${imageRef}"
+            docker push ${imageRef}
+          """
+        }
       }
     }
 
