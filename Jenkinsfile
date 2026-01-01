@@ -1,3 +1,22 @@
+def trivyScanImage(String imageRef) {
+  sh """
+    set -e
+
+    # cache trivy (żeby było szybciej)
+    mkdir -p .trivy-cache
+
+    docker run --rm \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v "\$(pwd)/.trivy-cache:/root/.cache/" \
+      aquasec/trivy:latest \
+      image --no-progress \
+      --severity CRITICAL,HIGH \
+      --exit-code 1 \
+      --ignore-unfixed \
+      "${imageRef}"
+  """
+}
+
 pipeline {
   agent any
 
@@ -67,6 +86,7 @@ pipeline {
         sh '''
           set -e
           docker build -t ${GHCR}/${ORG}/frontend:$TAG frontend
+          script { trivyScanImage("${IMAGE}") }
           docker push ${GHCR}/${ORG}/frontend:$TAG
         '''
       }
