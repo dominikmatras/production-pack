@@ -11,6 +11,7 @@ export class ReportController {
 	async create(req: Request, res: Response, next: NextFunction) {
 		try {
 			const result = await createProductionReportUseCase.execute(req.body)
+			console.log(`RAPORT CREATED: id=${result.id}`)
 			res.status(201).json(result)
 		} catch (error) {
 			next(error)

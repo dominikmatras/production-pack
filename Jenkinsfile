@@ -151,13 +151,13 @@ pipeline {
 
                 if (inblock==1 && $0 ~ /^[[:space:]]*tag:[[:space:]]*/) {
                   indent=$0
-                  sub(/[^[:space:]].*$/,"",indent)   # zostaw tylko wcięcie
-                  print indent "tag: " newtag        # tag bez cudzysłowów (YAML OK)
+                  sub(/[^[:space:]].*$/,"",indent)
+                  print indent "tag: " newtag
                   inblock=0
                   next
                 }
 
-                if (inblock==1 && $0 ~ /^[^[:space:]]/) { inblock=0 } # bezpiecznik
+                if (inblock==1 && $0 ~ /^[^[:space:]]/) { inblock=0 }
                 print
               }
             ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"

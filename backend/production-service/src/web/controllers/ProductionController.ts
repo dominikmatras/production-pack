@@ -15,6 +15,7 @@ export const startProduction = async (req: Request, res: Response): Promise<void
 	}
 
 	await productionHandler.start(id)
+	console.log(`PRODUCTION STARTED: id=${id}`)
 	res.status(200).json({ message: 'Production started' })
 }
 
@@ -32,6 +33,7 @@ export const pauseProduction = async (req: Request, res: Response): Promise<void
 
 	await productionHandler.pause(id, { reasonCode, description })
 
+	console.log(`PRODUCTION PAUSED: id=${id}`)
 	res.status(200).json({ message: 'Production paused' })
 }
 
@@ -43,6 +45,7 @@ export const resumeProduction = async (req: Request, res: Response): Promise<voi
 	}
 
 	await productionHandler.resume(id)
+	console.log(`PRODUCTION RESUMED: id=${id}`)
 	res.status(200).json({ message: 'Production resumed' })
 }
 
@@ -54,5 +57,6 @@ export const stopProduction = async (req: Request, res: Response): Promise<void>
 	}
 
 	await productionHandler.stop(id)
+	console.log(`PRODUCTION STOPPED: id=${id}`)
 	res.status(200).json({ message: 'Production stopped' })
 }

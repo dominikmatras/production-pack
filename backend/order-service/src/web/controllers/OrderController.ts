@@ -8,10 +8,8 @@ const createOrder = new CreateOrder(orderService)
 export const create: RequestHandler = async (req, res) => {
 	try {
 		const data = req.body
-
-		console.log('CREATE DATA:', data)
-
 		const order = await createOrder.execute(data)
+		console.log(`ORDER CREATED: id=${order.id} status=${order.status}`)
 		res.status(201).json(order)
 	} catch (e: any) {
 		res.status(400).json({ error: e.message })
